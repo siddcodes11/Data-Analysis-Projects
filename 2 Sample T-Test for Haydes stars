@@ -1,0 +1,40 @@
+#we consider null hypothesis as hyades & non-hyades stars have same colors
+#importing the python modules
+import numpy as np
+import pandas as pd
+from scipy import stats
+import csv
+#converting the dat file to csv file
+#reading HIPstardata.dat to a list of lists
+datContent = [i.strip().split() for i in open("/home/siddhant/Documents/HIP_star.data.txt").readlines()]
+#writing it as a new CSV file
+with open("./HIP_star.csv", "w") as f:
+writer = csv.writer(f)
+writer.writerows(datContent)
+#reading the csv file
+data = pd.read_csv('HIP_star.csv')
+#creating a seperate dataframe for the hyades stars by checking all the conditions
+hyades = data[data['RA']>50]
+hyades = hyades[hyades['RA']<100]
+hyades = hyades[hyades['DE']>0]
+hyades = hyades[hyades['DE']<25]
+hyades = hyades[hyades['pmRA']>90]
+hyades = hyades[hyades['pmRA']<130]
+hyades = hyades[hyades['pmDE']>-60]
+hyades = hyades[hyades['pmDE']<-10]#creating a seperate dataframe for the non-hyades stars
+df = pd.concat([data, hyades])
+non_hyades = df.drop_duplicates(keep=False)
+#storing the color values in a seperate numpy array and dropping the nan values
+data1 = hyades['B-V'].values
+data2 = non_hyades['B-V'].values
+data2 = data2[~np.isnan(data2)]
+print("Total number of hyades stars=",np.shape(data1))
+print("Total number of non-hyades stars=",np.shape(data2))
+#2 sample t-test to find t-statistic & p-values
+stat, p_val = stats.ttest_ind(data1, data2, equal_var=False)
+#printing t-statistics & p-values
+print("The value of the t-statistic is : ",stat)
+print("The p-value of the 2 sample t-test is : ",p_val)
+#rejecting null hypothesis based on p-value
+print("p value is less than 0.05, we can reject our null hypothesis that the colors of hyades and non-hyades stars are same")
+print(" the two star categories don't have the same color")
