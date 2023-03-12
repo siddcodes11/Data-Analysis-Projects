@@ -1,0 +1,39 @@
+# Import python modules
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scipy.stats as stats
+
+# Load data from .dat file & extract redshift and luminosity data & store them in lists
+luminosity,redshift=np.loadtxt(r'/home/siddhant/Desktop/test_data.dat.txt',usecols=(0,1),unpack=True)
+
+# Plot luminosity vs redshift on log-log scale
+plt.loglog(redshift, luminosity, 'o')
+plt.xlabel("Redshift (z)")
+plt.ylabel("Luminosity (L)")
+plt.title("Luminosity vs Redshift")
+plt.show()
+
+# Plot luminosity vs redshift (without log-log) to demonstrate the correlation
+# between redshift and luminosity
+
+plt.plot(redshift, luminosity, 'o')
+plt.xlabel("Redshift (z)")
+plt.ylabel("Luminosity (L)")
+plt.title("Luminosity vs Redshift")
+plt.show()
+
+# Calculate Spearman correlation coefficient and p-value
+spearman_coef, spearman_pvalue = stats.spearmanr(redshift, luminosity)
+print("Spearman correlation coefficient:", spearman_coef)
+print("Spearman p-value:", spearman_pvalue)
+
+# Calculate Pearson correlation coefficient and p-value
+pearson_coef, pearson_pvalue = stats.pearsonr(redshift, luminosity)
+print("Pearson correlation coefficient:", pearson_coef)
+print("Pearson p-value:", pearson_pvalue)
+
+# Calculate Kendall-Tau correlation coefficient and p-value
+kendall_coef, kendall_pvalue = stats.kendalltau(redshift, luminosity)
+print("Kendall-Tau correlation coefficient:", kendall_coef)
+print("Kendall-Tau p-value:", kendall_pvalue)
