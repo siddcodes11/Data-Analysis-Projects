@@ -1,0 +1,19 @@
+#importing necesary python modules
+import numpy as np
+from scipy.stats import norm
+#define general relativity hypothesis
+def likelihood_GR(x):
+return norm.pdf(x, loc=1.74, scale=0.4)
+#define newton gravity hyothesis
+def likelihood_NG(x):
+return norm.pdf(x, loc=0.87, scale=0.4)
+#calculating likelihood ratio & bayes factor for both expeditions
+likelihood_ratio_1=likelihood_GR(1.61)/likelihood_NG(1.61)
+likelihood_ratio_2=likelihood_GR(1.98)/likelihood_NG(1.98)
+Bayes_factor_1=likelihood_ratio_1*1
+Bayes_factor_2=likelihood_ratio_2*1
+#print functions
+print(Bayes_factor_1)
+print(Bayes_factor_2)
+######### *The* two data shows Bayes factor is greater than 1 ,
+######### so it shows strong evidence of general relativity over Newton gravity.
