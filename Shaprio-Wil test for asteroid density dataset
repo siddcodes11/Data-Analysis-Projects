@@ -1,0 +1,50 @@
+#we take the null hypothesis as the data is drawn from normal distribution
+#importing the necessary python modules
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from scipy import stats
+#reading the data
+data=np.loadtxt(r'/home/siddhant/Downloads/asteroid_density_data',usecols=(0),unpack=True)
+print(data)
+#shapiro-wilk test for asteroid density values
+s_1 = stats.shapiro(data)
+#shapiro-wilk for natural logarithm of asteroid density values
+s_2 = stats.shapiro(np.log(data))
+#printing p values for density values & log(density) values & comparing them
+print('The p value for shapiro-wilk test of density values is :', s_1[1])
+print('The p value for shapiro-wilk test of log(density) values is :', s_2[1])
+print("p value of log(density) is higher so it cannot reject the null hypothesis that the data is drawn from normal distribution")
+##########
+curve fitting ############
+#Using stats.norm.fit() we find the mean & standard deviation values
+mu_s1, std_s1 = stats.norm.fit(data)
+mu_s2, std_s2 = stats.norm.fit(np.log(data))
+#Returns evenly spaced numbers over a specified interval
+t=np.linspace(-7, 7, 1000)
+#fitting normal curve
+norm1 = stats.norm.pdf(t, mu_s1, std_s1)
+norm2 = stats.norm.pdf(t, mu_s2, std_s2)
+###########
+Plotting the normal fits and the respective histograms
+###############
+#plotting the asteroid density values histogram
+fig, ax = plt.subplots(2, 1, figsize=(6,6))
+plt.xlim(-1.5, 3.5)
+ax[0].plot(t, norm1, 'k-', label='norm pdf')
+ax[0].hist(data, density = True, histtype='stepfilled', alpha=0.8, label='density', bins='fd')
+ax[0].legend(loc='upper right')
+ax[0].set_xlim([-3, 6])
+ax[0].set_title('Histogram and gaussian fitting of Density values')
+ax[0].set_xlabel('$x$')
+ax[0].set_ylabel('$y$')
+##plotting the asteroid log(density) values histogram
+ax[1].plot(t, norm2, 'k-', label='norm2 pdf')
+ax[1].hist(np.log(data), density = True, histtype='stepfilled', alpha=0.8, label='log(density)', bins='fd')
+ax[1].legend(loc='upper right')
+ax[1].set_xlim([-2, 3])
+ax[1].set_title('Histogram and gaussian fitting of log(Density) values')
+ax[1].set_xlabel('$x$')
+ax[1].set_ylabel('$y$')
+plt.tight_layout()
+plt.show()
