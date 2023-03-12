@@ -1,0 +1,165 @@
+###########  Question 2 solution ############
+
+
+
+# The linear model is considered as the null hypothesis
+
+#Importing the required modules
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+from scipy import optimize, stats
+import csv
+
+#
+data = np.array([[ 0.42,  0.72,  0.  ,  0.3 ,  0.15,
+                   0.09,  0.19,  0.35,  0.4 ,  0.54,
+                   0.42,  0.69,  0.2 ,  0.88,  0.03,
+                   0.67,  0.42,  0.56,  0.14,  0.2  ],
+                 [ 0.33,  0.41, -0.22,  0.01, -0.05,
+                  -0.05, -0.12,  0.26,  0.29,  0.39, 
+                   0.31,  0.42, -0.01,  0.58, -0.2 ,
+                   0.52,  0.15,  0.32, -0.13, -0.09 ],
+                 [ 0.1 ,  0.1 ,  0.1 ,  0.1 ,  0.1 ,
+                   0.1 ,  0.1 ,  0.1 ,  0.1 ,  0.1 ,
+                   0.1 ,  0.1 ,  0.1 ,  0.1 ,  0.1 ,
+                   0.1 ,  0.1 ,  0.1 ,  0.1 ,  0.1  ]])
+x, y, sigma_y = data
+
+#initialise theta for all the fits to zero
+v_1 = np.array([0, 0])
+v_2 = np.array([0, 0, 0])
+
+
+# Defining the required functions for fitting
+def linear(x, v_1):     #linear
+    return v_1[1]*x+v_1[0]
+
+def quadratic(x, v_2):      #quadratic
+    return v_2[2]*x**2 + v_2[1]*x + v_2[0]
+
+
+#The log-likelihood function
+#The log-likelihood function is maximum for best fitting value of theta
+
+def logL(theta, n):
+    if n==1:
+        y_fit = linear(x, theta)
+    elif n==2:
+        y_fit = quadratic(x, theta)
+    return sum(stats.norm.logpdf(*args)
+               for args in zip(y, y_fit, sigma_y))
+
+#This function returns the best theta value for the fitting
+def best_theta(n, theta_val):
+    if n==1:
+        theta_0 = (n+1)*[0]
+        neg_logL = lambda theta: -logL(theta, 1)
+        return optimize.fmin_bfgs(neg_logL, theta_0, disp=False)
+    if n==2:
+        theta_0 = (n+1)*[0]
+        neg_logL = lambda theta: -logL(theta, 2)
+        return optimize.fmin_bfgs(neg_logL, theta_0, disp=False)
+    
+    
+#Compute the optimized values of the parameters
+r1 = best_theta(1, v_1)
+r2 = best_theta(2, v_2)
+
+#Compute the AIC values using AIC = -2*log likelihood(optimized value of theta,n)+2*(n+1)
+def aic(r1,n):
+    return -2*logL(r1,n)+2*(n+1)
+
+#Compute the AIC values corrected for small sample size which is AICc 
+#AICc values = AIC value + 2*k*(k+1)/(N-K-1)
+def aic_c(r1,n,N):
+    k=n+1
+    return aic(r1,n) + (2*k*(k+1))/(N-k-1)
+
+#function calling & calculating AICc for different models
+AIC1 = aic_c(r1,1,20)
+AIC2 = aic_c(r2,2,20)
+
+#Compute the BIC values
+#Calculatig BIC = -2*log likelihood + 2*numpy.log(sample size)
+BIC1 = -2*logL(r1, 1) + 2*np.log(x.shape[0])
+BIC2 = -2*logL(r2, 2) + 3*np.log(x.shape[0])
+
+
+#Computing delta AIC
+AIC_min = min(AIC1, AIC2, AIC3)
+
+#Computing delta BIC
+BIC_min = min(BIC1, BIC2, BIC3)
+
+################################### functions ended ###########################
+
+
+#################### print functions ###########################
+
+#Printing log likelihood values for different models
+print("Log L values")
+print("linear model: logL =", logL(best_theta(1, v_1), 1))
+print("quadratic model:logL =", logL(best_theta(2, v_2), 2))
+
+
+"""Bayesian Analysis"""
+
+#Printing AIC values for different models
+print("AIC values")
+print("- linear model:    ", AIC1)
+print("- quadratic model: ", AIC2)
+
+#Printing delta AIC values for different models
+print("Delta AIC values")
+print("- linear model:    ", AIC1-AIC_min)
+print("- quadratic model: ", AIC2-AIC_min)
+
+
+#Interpreting results for AIC
+print("For quadratic model, 0 < delta AIC < 2, which implies that quadratic model also has a substantial support")
+print(" For linear model, delta AIC = 0, which implies that model has substantial support")
+
+#Printing BIC values for different models
+print("BIC vlaues")
+print("- linear model:    ", BIC1)
+print("- quadratic model: ", BIC2)
+
+
+#Printing delta BIC values for different models
+print("Delta BIC values")
+print("- linear model:    ", BIC1-BIC_min)
+print("- quadratic model: ", BIC2-BIC_min)
+
+
+#Interpreting results for BIC
+print("For quadratic model, 0 < delta BIC < 2, which implies that there is no evidence against quadratic model")
+print(" For linear model, delta BIC = 0, which implies that model cannot be rejected")
+
+#Compring AIC values to find best fit model
+if AIC1 < AIC2:
+        print("Linear Model is the best fit based on AIC.")
+elif AIC2 < AIC1:
+        print("Quadratic Model is the best fit based on AIC.")
+
+if BIC1 < BIC2:
+        print("Linear Model is the best fit based on BIC.")
+elif BIC2 < BIC1:
+        print("Quadratic Model is the best fit based on BIC.")
+
+
+############# Plotting graphs using different line styles #####################
+t =  np.linspace(0, 1, 1000)
+fig, ax = plt.subplots(figsize=(10, 10))
+plt.plot(t, linear(t, r1), label='linear_fitting')
+plt.plot(t, quadratic(t, r2), label='quadratic_fitting')
+plt.legend()
+plt.xlabel('$x$')
+plt.ylabel('$y$')
+plt.title("Curve fitting using Linear, Quadratic Models", size=15)
+ax.errorbar(x, y, sigma_y, fmt='ok', ecolor = 'gray')
+plt.show()
+
+############ Comparing with the frequentist method #####################
+
+print("As we can observe comparing with the blog, linear model is the best fit either through frequentist method or using AIC-BIC ")
