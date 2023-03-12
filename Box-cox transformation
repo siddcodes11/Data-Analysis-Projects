@@ -1,0 +1,33 @@
+#importing python library functions
+import numpy as np
+import scipy
+from scipy  import stats
+import statistics as stat
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# reading values from given csv file
+data=pd.read_csv(r'/home/siddhant/Downloads/exoplanet.eu_catalog.csv')
+
+# extracting eccentricity values from csv file & storing them in array
+ecc_val=np.array(data['eccentricity'].tolist())
+
+# checking if a value is 'nan' & deleting those values
+ecc = ecc_val[~(np.isnan(ecc_val))]
+ecc_final = np.delete(ecc, np.where(ecc == 0))
+
+# using "boxcox transform" to transform eccentricity values
+ecc_val_transformed=stats.boxcox(ecc_final)
+
+
+plt.hist(ecc_final,alpha=0.9, bins=80)                   # plotting original eccentricity values
+plt.xlabel('eccentricity values')
+plt.ylabel('frequency')
+plt.show()
+
+ 
+plt.hist(ecc_val_transformed,alpha=0.9, bins=50)       # plotting transformed eccentricity values     
+plt.xlabel('eccentricity values boxcox transformed')
+plt.ylabel('frequency')
+plt.show()
+
