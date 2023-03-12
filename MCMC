@@ -1,0 +1,51 @@
+# importing python modules
+import numpy as np
+import emcee
+import corner
+# defining the log likelihood function
+def ln_likelihood(theta, x, y, sigma_y):
+ m, b = theta
+ y_model = m*x + b
+ ln_likelihood = -0.5*np.sum(((y - y_model)/sigma_y)**2 + np.log(2*np.pi*sigma_y**2))
+ return ln_likelihood
+# define the log prior function
+def ln_prior(theta):
+ m, b = theta
+ if -10 < m < 10 and -100 < b < 100:
+ return 0.0
+ else:
+ return -np.inf
+# define the log posterior function
+def ln_posterior(theta, x, y, sigma_y):
+ ln_prior_val = ln_prior(theta)
+ if np.isinf(ln_prior_val):
+ return ln_prior_val
+ ln_likelihood_val = ln_likelihood(theta, x, y, sigma_y)
+ ln_posterior_val = ln_prior_val + ln_likelihood_val
+ return ln_posterior_val
+# Storing x, y, and sigma_y values in an array
+x = np.array([203, 58, 210, 202, 198, 158,165,201,157,131,166,160,186,125,218,146])
+y = np.array([495,173,479,504,510,416,393,442,317,311,400,337,423,334,533,344])
+sigma_y = np.array([21,15,27,14,30,16,14,25,52,16,34,31,42,26,16,22,])
+# Setting up the emcee sampler
+ndim = 2
+nwalkers = 100
+nsteps = 1000
+p0 = np.random.rand(nwalkers, ndim)
+sampler = emcee.EnsembleSampler(nwalkers, ndim, ln_posterior, args=[x, y, sigma_y])
+sampler.run_mcmc(p0, nsteps)
+# Getting the flattened chain and compute the 68% and 95% joint confidence intervals
+samples = sampler.flatchain
+m_median = np.median(samples[:,0])
+b_median = np.median(samples[:,1])
+m_sigma = np.std(samples[:,0])
+b_sigma = np.std(samples[:,1])
+corr = np.corrcoef(samples.T)[0,1]
+#printing values of best fit
+print(f"m = {m_median:.2f} +/- {m_sigma:.2f}")
+print(f"b = {b_median:.2f} +/- {b_sigma:.2f}")
+print(f"corr = {corr:.2f}")
+# Making a corner plot of the posterior distribution
+labels = ['m', 'b']
+fig = corner.corner(samples, labels=labels, truths=[m_median, b_median])
+fig.savefig('corner.png')
