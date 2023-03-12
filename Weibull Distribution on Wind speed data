@@ -1,0 +1,32 @@
+# importing python modules
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import weibull_min
+
+# Read data from file
+
+data = np.loadtxt(r'/home/siddhant/Downloads/wind_data.txt') 
+
+# Extract class intervals and frequencies 
+intervals = data[:, 0] 
+frequencies = data[:, 1] 
+
+# Calculate probability distribution 
+probabilities = frequencies / np.sum(frequencies) 
+
+# Plot histogram 
+plt.bar(intervals, probabilities, width=0.5) 
+plt.xlabel('Wind Speed (m/s)') 
+plt.ylabel('Probability') 
+
+# Fit Weibull distribution 
+params = weibull_min.fit(intervals, floc=0) 
+# Generate Weibull distribution 
+x = np.linspace(0, max(intervals), 100) 
+weibull = weibull_min.pdf(x, *params) 
+
+# Plot Weibull distribution 
+plt.plot(x, weibull, 'r', linewidth=2, label='Weibull fit')
+
+plt.legend() 
+plt.show()
