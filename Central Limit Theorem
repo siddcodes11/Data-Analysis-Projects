@@ -1,0 +1,63 @@
+# importing python modules
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import chi2, norm
+
+# seed to generate similar random numbers
+np.random.seed(42)
+
+# number of times function would iterate
+n = 100000
+
+# Degrees of freedom
+df = 3
+
+# Draw samples from chi-squared distribution
+samples_1 = chi2.rvs(df, size=n)   # for sample size = 1 , mean would be similar
+samples_5 = np.mean([chi2.rvs(df, size=n) for _ in range(5)], axis=0)
+samples_10 = np.mean([chi2.rvs(df, size=n) for _ in range(10)], axis=0)
+
+# Plot histograms
+fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+axs[0].hist(samples_1, bins=50, density=True, label='Sample size = 1')
+axs[1].hist(samples_5, bins=50, density=True, label='Sample size = 5')
+axs[2].hist(samples_10, bins=50, density=True, label='Sample size = 10')
+
+
+# Fit gaussian distribution to demonstrate central limit theorem, i.e, 
+# as we increase the sample size, sample mean fits normal curve
+
+
+# fitting gaussian curve for sample size = 1
+
+# calculating mean and standard deviation using norm.fit()
+mu, std = norm.fit(samples_1)
+xmin, xmax = plt.xlim()
+x = np.linspace(xmin, xmax, 100)
+# calculating gaussian probability distribution function 
+p = norm.pdf(x, mu, std)
+axs[0].plot(x, p, 'r', linewidth=2, label='Gaussian fit')
+
+# fitting gaussian curve for sample size = 5
+
+# calculating mean and standard deviation using norm.fit()
+mu, std = norm.fit(samples_5)
+xmin, xmax = plt.xlim()
+x = np.linspace(xmin, xmax, 100)
+# calculating gaussian probability distribution function 
+p = norm.pdf(x, mu, std)
+axs[1].plot(x, p, 'r', linewidth=2, label='Gaussian fit')
+
+# fitting gaussian curve for sample size = 10
+
+# calculating mean and standard deviation using norm.fit()
+mu, std = norm.fit(samples_10)
+xmin, xmax = plt.xlim()
+x = np.linspace(xmin, xmax, 100)
+# calculating gaussian probability distribution function
+p = norm.pdf(x, mu, std)
+axs[2].plot(x, p, 'r', linewidth=2, label='Gaussian fit')
+
+for ax in axs:
+    ax.legend()
+plt.show()
