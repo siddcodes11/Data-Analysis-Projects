@@ -1,0 +1,33 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import norm
+import scipy
+import random
+#MCMC
+x = 0
+iter = int(1e4)
+val = []
+for i in range(iter):
+    p0 = norm(2, np.sqrt(2)).pdf(x)
+    
+    #drawing from a normal distribution centred at x with deviation 1
+    b = np.random.normal(x, 1)
+    pc = norm(2, np.sqrt(2)).pdf(b)
+    
+    r = random.uniform(0, 1)
+   
+    if (pc/p0 > r):
+        x = b
+    else:
+        x = x
+      
+    val.append(x)
+#plot the histogram and the gaussian curve
+t = np.linspace(-4, 8, int(1e4))
+gaussian = scipy.stats.norm.pdf(t, 2, np.sqrt(2))
+plt.hist(val, density= True, bins='fd', histtype='step', label='histogram')
+plt.plot(t, gaussian, 'k', label='gaussian')
+plt.legend()
+plt.xlabel('$x$')
+plt.ylabel('$p(x)$')
+plt.show()
